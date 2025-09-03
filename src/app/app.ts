@@ -10,5 +10,4 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('codepulse');
 }

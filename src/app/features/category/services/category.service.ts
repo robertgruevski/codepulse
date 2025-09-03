@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class CategoryService {
+  
   constructor(private http: HttpClient) {}
 
   addCategory(model: AddCategoryRequest): Observable<void> {
