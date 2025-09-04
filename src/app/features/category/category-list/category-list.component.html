@@ -7,30 +7,28 @@
     </div>
 
     @if (categories$ | async; as categories) {
-    <ng-container>
-        <table class="table tabled-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Url Handle</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (category of categories; track $index) {
-                <tr>
-                    <td>{{ category.id }}</td>
-                    <td>{{ category.name }}</td>
-                    <td>{{ category.urlHandle }}</td>
-                    <td>
-                        <a [routerLink]="['/admin/categories', category.id]" class="btn btn-light">Edit</a>
-                    </td>
-                </tr>
-                }
-            </tbody>
-        </table>
-    </ng-container>
+    <table class="table tabled-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Url Handle</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (category of categories; track $index) {
+            <tr>
+                <td>{{ category.id }}</td>
+                <td>{{ category.name }}</td>
+                <td>{{ category.urlHandle }}</td>
+                <td>
+                    <a [routerLink]="['/admin/categories', category.id]" class="btn btn-light">Edit</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
     }
 
 </div>
