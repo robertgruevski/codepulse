@@ -3,10 +3,12 @@ import { CategoryListComponent } from './features/category/category-list/categor
 import { AddCategoryComponent } from './features/category/add-category/add-category.component';
 import { HomeComponent } from './core/components/home/home.component';
 import { EditCategoryComponent } from './features/category/edit-category/edit-category.component';
+import { BlogpostListComponent } from './features/blog-post/blogpost-list/blogpost-list.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'admin/categories', component: CategoryListComponent },
   { path: 'admin/categories/add', component: AddCategoryComponent },
   { path: 'admin/categories/:id', component: EditCategoryComponent },
+  { path: 'admin/blogposts', component: BlogpostListComponent },
 ];
