@@ -29,6 +29,7 @@ export class AddBlogpostComponent implements OnInit {
       author: '',
       publishedDate: new Date(),
       isVisible: true,
+      categories: []
     };
   }
 
@@ -37,6 +38,7 @@ export class AddBlogpostComponent implements OnInit {
   }
 
   onFormSubmit(): void {
+    console.log(this.model);
     this.blogPostService.createBlogPost(this.model)
     .subscribe({
       next: (response) => {
