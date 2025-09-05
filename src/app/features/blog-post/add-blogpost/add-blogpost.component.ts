@@ -1,25 +1,42 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AddBlogPost } from '../models/add-blog-post.model';
 import { FormsModule } from '@angular/forms';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { BlogPostService } from '../services/blog-post.service';
 import { Router } from '@angular/router';
 import { MarkdownComponent } from 'ngx-markdown';
 import { CategoryService } from '../../category/services/category.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Category } from '../../category/models/category.model';
+import { ImageSelectorComponent } from '../../../shared/components/image-selector/image-selector.component';
+import { ImageService } from '../../../shared/components/image-selector/image.service';
 
 @Component({
   selector: 'app-add-blogpost',
-  imports: [FormsModule, DatePipe, MarkdownComponent, AsyncPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DatePipe,
+    MarkdownComponent,
+    AsyncPipe,
+    ImageSelectorComponent,
+  ],
   templateUrl: './add-blogpost.component.html',
   styleUrl: './add-blogpost.component.css',
 })
-export class AddBlogpostComponent implements OnInit {
+export class AddBlogpostComponent implements OnInit, OnDestroy {
   model: AddBlogPost;
-  categories$?: Observable<Category[]>
+  isImageSelectorVisible: boolean = false;
+  categories$?: Observable<Category[]>;
 
-  constructor(private blogPostService: BlogPostService, private router: Router, private categoryService: CategoryService) {
+  imageSelectorSubscription?: Subscription;
+
+  constructor(
+    private blogPostService: BlogPostService,
+    private router: Router,
+    private categoryService: CategoryService,
+    private imageService: ImageService
+  ) {
     this.model = {
       title: '',
       shortDescription: '',
@@ -29,22 +46,40 @@ export class AddBlogpostComponent implements OnInit {
       author: '',
       publishedDate: new Date(),
       isVisible: true,
-      categories: []
+      categories: [],
     };
   }
 
   ngOnInit(): void {
     this.categories$ = this.categoryService.getAllCategories();
+
+    this.imageSelectorSubscription = this.imageService.onSelectImage().subscribe({
+      next: (response) => {
+        this.model.featuredImageUrl = response.url;
+        this.closeImageSelector();
+      },
+    });
   }
 
   onFormSubmit(): void {
     console.log(this.model);
-    this.blogPostService.createBlogPost(this.model)
-    .subscribe({
+    this.blogPostService.createBlogPost(this.model).subscribe({
       next: (response) => {
         console.log(response);
         this.router.navigateByUrl('/admin/blogposts');
-      }
-    })
+      },
+    });
+  }
+
+  openImageSelector(): void {
+    this.isImageSelectorVisible = true;
+  }
+
+  closeImageSelector(): void {
+    this.isImageSelectorVisible = false;
+  }
+
+  ngOnDestroy(): void {
+    this.imageSelectorSubscription?.unsubscribe();
   }
 }
