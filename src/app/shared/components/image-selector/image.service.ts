@@ -10,6 +10,10 @@ import { environment } from '../../../../environments/environment.development';
 export class ImageService {
   constructor(private http: HttpClient) {}
 
+  getAllImages(): Observable<BlogImage[]> {
+    return this.http.get<BlogImage[]>(`${environment.apiBaseUrl}/api/images`);
+  }
+
   uploadImage(file: File, fileName: string, title: string): Observable<BlogImage> {
     const formData = new FormData();
     formData.append('file', file);
