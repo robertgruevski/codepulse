@@ -10,7 +10,7 @@
                 <div class="d-flex flex-wrap">
                     @for(image of images; track image.id)
                     {
-                    <div style="min-width: 100px; justify-content: center; cursor: pointer;"
+                    <div (click)="selectImage(image)" style="min-width: 100px; justify-content: center; cursor: pointer;"
                         class="me-1 bg-white d-flex align-items-center flex-column border p-3">
                         <img [src]="image.url" [title]="image.title" style="height: 100px;">
                         <span class="mt-1">{{image.title}}</span>

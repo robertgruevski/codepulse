@@ -1,87 +1,113 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, switchMap, tap } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { BlogPostService } from '../services/blog-post.service';
 import { BlogPost } from '../models/blog-post.model';
-import { FormsModule } from '@angular/forms';
-import { MarkdownModule } from 'ngx-markdown';
-import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { CategoryService } from '../../category/services/category.service';
 import { Category } from '../../category/models/category.model';
 import { UpdateBlogPost } from '../models/update-blog-post.model';
+import { ImageService } from '../../../shared/components/image-selector/image.service';
+import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MarkdownModule } from 'ngx-markdown';
 import { ImageSelectorComponent } from '../../../shared/components/image-selector/image-selector.component';
 
 @Component({
   selector: 'app-edit-blogpost',
-  imports: [CommonModule, FormsModule, MarkdownModule, DatePipe, AsyncPipe, ImageSelectorComponent],
+  imports: [CommonModule, FormsModule, MarkdownModule, DatePipe, ImageSelectorComponent],
   templateUrl: './edit-blogpost.component.html',
-  styleUrl: './edit-blogpost.component.css',
+  styleUrls: ['./edit-blogpost.component.css']
 })
-export class EditBlogpostComponent implements OnInit {
+export class EditBlogpostComponent implements OnInit, OnDestroy {
   id: string | null = null;
-  model$?: Observable<BlogPost>;
-  categories$?: Observable<Category[]>;
+  model?: BlogPost;
+  categories$? : Observable<Category[]>;
   selectedCategories?: string[];
-  isImageSelectorVisible: boolean = false;
+  isImageSelectorVisible : boolean = false;
 
-  constructor(
-    private route: ActivatedRoute,
+
+  routeSubscription?: Subscription;
+  updateBlogPostSubscription?: Subscription;
+  getBlogPostSubscription?: Subscription;
+  deleteBlogPostSubscription?: Subscription;
+  imageSelectSubscricption?: Subscription;
+
+
+  constructor(private route: ActivatedRoute,
     private blogPostService: BlogPostService,
     private categoryService: CategoryService,
-    private router: Router
-  ) {}
+    private router:Router,
+    private imageService: ImageService) {
+
+  }
+
 
   ngOnInit(): void {
     this.categories$ = this.categoryService.getAllCategories();
-    this.model$ = this.route.paramMap.pipe(
-      tap((params) => {
+
+
+    this.routeSubscription = this.route.paramMap.subscribe({
+      next: (params) => {
         this.id = params.get('id');
-      }),
-      switchMap((params) => {
-        const id = params.get('id');
-        if (id) {
-          return this.blogPostService.getBlogPostById(id).pipe(
-            tap((blogPost) => {
-              this.selectedCategories = blogPost.categories.map((category) => category.id);
-            })
-          );
+
+        // Get BlogPost From API
+        if (this.id) {
+          this.getBlogPostSubscription = this.blogPostService.getBlogPostById(this.id).subscribe({
+            next: (response) => {
+              this.model = response;
+              this.selectedCategories = response.categories.map(x => x.id);
+            }
+          });
+          ;
         }
-        return new Observable<BlogPost>();
-      })
-    );
+
+        this.imageSelectSubscricption = this.imageService.onSelectImage()
+        .subscribe({
+          next: (response) => {
+            if (this.model) {
+              this.model.featuredImageUrl = response.url;
+              this.isImageSelectorVisible = false;
+            }
+          }
+        })
+      }
+    });
   }
 
-  onFormSubmit(model: BlogPost): void {
-    if (this.id && model) {
+  onFormSubmit(): void {
+    // Convert this model to Request Object
+    if (this.model && this.id) {
       var updateBlogPost: UpdateBlogPost = {
-        content: model.content,
-        author: model.author,
-        shortDescription: model.shortDescription,
-        featuredImageUrl: model.featuredImageUrl,
-        isVisible: model.isVisible,
-        publishedDate: model.publishedDate,
-        title: model.title,
-        urlHandle: model.urlHandle,
-        categories: this.selectedCategories ?? [],
+        author: this.model.author,
+        content: this.model.content,
+        shortDescription: this.model.shortDescription,
+        featuredImageUrl: this.model.featuredImageUrl,
+        isVisible: this.model.isVisible,
+        publishedDate: this.model.publishedDate,
+        title: this.model.title,
+        urlHandle: this.model.urlHandle,
+        categories: this.selectedCategories ?? []
       };
 
-      // The subscription is now short-lived and doesn't need to be managed
-      this.blogPostService.updateBlogPost(this.id, updateBlogPost).subscribe({
-        next: (response) => {
-          this.router.navigateByUrl('admin/blogposts');
-        },
-      });
-    }
-  }
-
-  onDelete(): void {
-    if(this.id) {
-      this.blogPostService.deleteBlogPost(this.id)
+      this.updateBlogPostSubscription = this.blogPostService.updateBlogPost(this.id, updateBlogPost)
       .subscribe({
         next: (response) => {
           this.router.navigateByUrl('/admin/blogposts');
         }
-      })
+      });
+    }
+
+  }
+
+  onDelete(): void {
+    if (this.id) {
+      // call service and delete blogpost
+      this.deleteBlogPostSubscription = this.blogPostService.deleteBlogPost(this.id)
+      .subscribe({
+        next: (response) => {
+          this.router.navigateByUrl('/admin/blogposts');
+        }
+      });
     }
   }
 
@@ -89,7 +115,15 @@ export class EditBlogpostComponent implements OnInit {
     this.isImageSelectorVisible = true;
   }
 
-  closeImageSelector(): void {
+  closeImageSelector() : void {
     this.isImageSelectorVisible = false;
+  }
+
+  ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
+    this.updateBlogPostSubscription?.unsubscribe();
+    this.getBlogPostSubscription?.unsubscribe();
+    this.deleteBlogPostSubscription?.unsubscribe();
+    this.imageSelectSubscricption?.unsubscribe();
   }
 }
