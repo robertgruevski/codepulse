@@ -50,7 +50,6 @@ export class EditBlogpostComponent implements OnInit {
   }
 
   onFormSubmit(model: BlogPost): void {
-    console.log(model);
     if (this.id && model) {
       var updateBlogPost: UpdateBlogPost = {
         content: model.content,
@@ -70,6 +69,17 @@ export class EditBlogpostComponent implements OnInit {
           this.router.navigateByUrl('admin/blogposts');
         },
       });
+    }
+  }
+
+  onDelete(): void {
+    if(this.id) {
+      this.blogPostService.deleteBlogPost(this.id)
+      .subscribe({
+        next: (response) => {
+          this.router.navigateByUrl('/admin/blogposts');
+        }
+      })
     }
   }
 }
