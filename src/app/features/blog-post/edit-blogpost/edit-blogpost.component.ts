@@ -9,10 +9,11 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { CategoryService } from '../../category/services/category.service';
 import { Category } from '../../category/models/category.model';
 import { UpdateBlogPost } from '../models/update-blog-post.model';
+import { ImageSelectorComponent } from '../../../shared/components/image-selector/image-selector.component';
 
 @Component({
   selector: 'app-edit-blogpost',
-  imports: [FormsModule, MarkdownModule, DatePipe, AsyncPipe],
+  imports: [FormsModule, MarkdownModule, DatePipe, AsyncPipe, ImageSelectorComponent],
   templateUrl: './edit-blogpost.component.html',
   styleUrl: './edit-blogpost.component.css',
 })
