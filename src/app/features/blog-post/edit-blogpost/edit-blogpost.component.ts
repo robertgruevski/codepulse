@@ -5,7 +5,7 @@ import { BlogPostService } from '../services/blog-post.service';
 import { BlogPost } from '../models/blog-post.model';
 import { FormsModule } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { CategoryService } from '../../category/services/category.service';
 import { Category } from '../../category/models/category.model';
 import { UpdateBlogPost } from '../models/update-blog-post.model';
@@ -13,7 +13,7 @@ import { ImageSelectorComponent } from '../../../shared/components/image-selecto
 
 @Component({
   selector: 'app-edit-blogpost',
-  imports: [FormsModule, MarkdownModule, DatePipe, AsyncPipe, ImageSelectorComponent],
+  imports: [CommonModule, FormsModule, MarkdownModule, DatePipe, AsyncPipe, ImageSelectorComponent],
   templateUrl: './edit-blogpost.component.html',
   styleUrl: './edit-blogpost.component.css',
 })
@@ -22,6 +22,7 @@ export class EditBlogpostComponent implements OnInit {
   model$?: Observable<BlogPost>;
   categories$?: Observable<Category[]>;
   selectedCategories?: string[];
+  isImageSelectorVisible: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -82,5 +83,13 @@ export class EditBlogpostComponent implements OnInit {
         }
       })
     }
+  }
+
+  openImageSelector(): void {
+    this.isImageSelectorVisible = true;
+  }
+
+  closeImageSelector(): void {
+    this.isImageSelectorVisible = false;
   }
 }
