@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, switchMap, tap } from 'rxjs';
 import { BlogPostService } from '../services/blog-post.service';
 import { BlogPost } from '../models/blog-post.model';
 import { FormsModule } from '@angular/forms';
@@ -16,14 +16,11 @@ import { UpdateBlogPost } from '../models/update-blog-post.model';
   templateUrl: './edit-blogpost.component.html',
   styleUrl: './edit-blogpost.component.css',
 })
-export class EditBlogpostComponent implements OnInit, OnDestroy {
+export class EditBlogpostComponent implements OnInit {
   id: string | null = null;
-  model?: BlogPost;
+  model$?: Observable<BlogPost>;
   categories$?: Observable<Category[]>;
   selectedCategories?: string[];
-  routeSubscription?: Subscription;
-  updateBlogPostSubscription?: Subscription;
-  getBlogPostSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,51 +30,46 @@ export class EditBlogpostComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.categoryService.getAllCategories();
-
-    this.routeSubscription = this.route.paramMap.subscribe({
-      next: (params) => {
+    this.categories$ = this.categoryService.getAllCategories();
+    this.model$ = this.route.paramMap.pipe(
+      tap((params) => {
         this.id = params.get('id');
-
-        if (this.id) {
-          this.getBlogPostSubscription = this.blogPostService.getBlogPostById(this.id).subscribe({
-            next: (response) => {
-              this.model = response;
-              this.selectedCategories = response.categories.map((x) => x.id);
-            },
-          });
+      }),
+      switchMap((params) => {
+        const id = params.get('id');
+        if (id) {
+          return this.blogPostService.getBlogPostById(id).pipe(
+            tap((blogPost) => {
+              this.selectedCategories = blogPost.categories.map((category) => category.id);
+            })
+          );
         }
-      },
-    });
+        return new Observable<BlogPost>();
+      })
+    );
   }
 
-  onFormSubmit(): void {
-    if (this.model && this.id) {
+  onFormSubmit(model: BlogPost): void {
+    console.log(model);
+    if (this.id && model) {
       var updateBlogPost: UpdateBlogPost = {
-        author: this.model.author,
-        content: this.model.content,
-        shortDescription: this.model.shortDescription,
-        featuredImageUrl: this.model.featuredImageUrl,
-        isVisible: this.model.isVisible,
-        publishedDate: this.model.publishedDate,
-        title: this.model.title,
-        urlHandle: this.model.urlHandle,
+        content: model.content,
+        author: model.author,
+        shortDescription: model.shortDescription,
+        featuredImageUrl: model.featuredImageUrl,
+        isVisible: model.isVisible,
+        publishedDate: model.publishedDate,
+        title: model.title,
+        urlHandle: model.urlHandle,
         categories: this.selectedCategories ?? [],
       };
 
-      this.updateBlogPostSubscription = this.blogPostService
-        .updateBlogPost(this.id, updateBlogPost)
-        .subscribe({
-          next: (response) => {
-            this.router.navigateByUrl('/admin/blog-posts');
-          },
-        });
+      // The subscription is now short-lived and doesn't need to be managed
+      this.blogPostService.updateBlogPost(this.id, updateBlogPost).subscribe({
+        next: (response) => {
+          this.router.navigateByUrl('admin/blogposts');
+        },
+      });
     }
-  }
-
-  ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
-    this.updateBlogPostSubscription?.unsubscribe();
-    this.getBlogPostSubscription?.unsubscribe();
   }
 }

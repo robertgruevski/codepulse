@@ -13,7 +13,7 @@ import { AsyncPipe } from '@angular/common';
 })
 export class BlogpostListComponent implements OnInit {
 
-  blogPosts$?: Observable<BlogPost[]>;;
+  blogPosts$?: Observable<BlogPost[]>;
 
   constructor(private blogPostService: BlogPostService) { }
 

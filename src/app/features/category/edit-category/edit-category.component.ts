@@ -1,14 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, tap } from 'rxjs';
 import { CategoryService } from '../services/category.service';
 import { Category } from '../models/category.model';
 import { FormsModule } from '@angular/forms';
 import { UpdateCategoryRequest } from '../models/update-category-request.model';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-edit-category',
-  imports: [FormsModule],
+  imports: [FormsModule, AsyncPipe],
   templateUrl: './edit-category.component.html',
   styleUrl: './edit-category.component.css',
 })
@@ -17,6 +18,8 @@ export class EditCategoryComponent implements OnInit, OnDestroy {
   paramsSubscription?: Subscription;
   editCategorySubscription?: Subscription;
   category?: Category;
+  category$?: Observable<Category>;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -30,11 +33,8 @@ export class EditCategoryComponent implements OnInit, OnDestroy {
         this.id = params.get('id');
 
         if (this.id) {
-          this.categoryService.getCategoryById(this.id).subscribe({
-            next: (response) => {
-              this.category = response;
-            },
-          });
+          this.category$ = this.categoryService.getCategoryById(this.id)
+          .pipe(tap(category => this.category = category));
         }
       },
     });
