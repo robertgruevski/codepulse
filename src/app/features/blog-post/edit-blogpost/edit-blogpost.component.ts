@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subscription, switchMap, tap } from 'rxjs';
+import { Observable, switchMap, tap } from 'rxjs';
 import { BlogPostService } from '../services/blog-post.service';
 import { BlogPost } from '../models/blog-post.model';
 import { FormsModule } from '@angular/forms';
