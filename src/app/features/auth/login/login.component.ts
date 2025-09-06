@@ -3,6 +3,8 @@ import { LoginRequest } from '../models/login-request.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
+import { CookieService } from 'ngx-cookie-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +15,7 @@ import { AuthService } from '../services/auth.service';
 export class LoginComponent {
   model: LoginRequest;
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private cookieService: CookieService, private router: Router) {
     this.model = {
       email: '',
       password: ''
@@ -24,7 +26,11 @@ export class LoginComponent {
     this.authService.login(this.model)
     .subscribe({
       next: (response) => {
-        console.log(response);
+        // Set Auth Cookie
+        this.cookieService.set('Authorization', `Bearer ${response.token}`, undefined, '/', undefined, true, 'Strict');
+
+        // Redirect back to Home page
+        this.router.navigateByUrl('/');
       }
     })
   }
