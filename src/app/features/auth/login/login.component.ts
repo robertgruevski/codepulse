@@ -10,28 +10,44 @@ import { Router } from '@angular/router';
   selector: 'app-login',
   imports: [FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   model: LoginRequest;
 
-  constructor(private authService: AuthService, private cookieService: CookieService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private cookieService: CookieService,
+    private router: Router
+  ) {
     this.model = {
       email: '',
-      password: ''
+      password: '',
     };
   }
 
   onFormSubmit(): void {
-    this.authService.login(this.model)
-    .subscribe({
+    this.authService.login(this.model).subscribe({
       next: (response) => {
         // Set Auth Cookie
-        this.cookieService.set('Authorization', `Bearer ${response.token}`, undefined, '/', undefined, true, 'Strict');
+        this.cookieService.set(
+          'Authorization',
+          `Bearer ${response.token}`,
+          undefined,
+          '/',
+          undefined,
+          true,
+          'Strict'
+        );
+
+        this.authService.setUser({
+          email: response.email,
+          roles: response.roles,
+        });
 
         // Redirect back to Home page
         this.router.navigateByUrl('/');
-      }
-    })
+      },
+    });
   }
 }
