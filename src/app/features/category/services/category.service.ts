@@ -11,54 +11,75 @@ import { CookieService } from 'ngx-cookie-service';
   providedIn: 'root',
 })
 export class CategoryService {
-  
   constructor(private http: HttpClient, private cookieService: CookieService) {}
-  
-  getAllCategories(query?: string, sortBy?: string, sortDirection?: string): Observable<Category[]> {
+
+  getAllCategories(
+    query?: string,
+    sortBy?: string,
+    sortDirection?: string,
+    pageNumber?: number,
+    pageSize?: number
+  ): Observable<Category[]> {
     let params = new HttpParams();
 
-    if(query) {
+    if (query) {
       params = params.set('query', query);
     }
 
-    if(sortBy) {
+    if (sortBy) {
       params = params.set('sortBy', sortBy);
     }
 
-    if(sortDirection) {
+    if (sortDirection) {
       params = params.set('sortDirection', sortDirection);
     }
 
+    if (pageNumber) {
+      params = params.set('pageNumber', pageNumber);
+    }
+
+    if (pageSize) {
+      params = params.set('pageSize', pageSize);
+    }
+
     return this.http.get<Category[]>(`${environment.apiBaseUrl}/api/Categories`, {
-      params: params
+      params: params,
     });
   }
-  
+
   getCategoryById(id: string): Observable<Category> {
     return this.http.get<Category>(`${environment.apiBaseUrl}/api/Categories/${id}`);
+  }
+
+  getCategoryCount(): Observable<number> {
+    return this.http.get<number>(`${environment.apiBaseUrl}/api/Categories/count`);
   }
 
   addCategory(model: AddCategoryRequest): Observable<void> {
     return this.http.post<void>(`${environment.apiBaseUrl}/api/Categories`, model, {
       headers: {
-        'Authorization': this.cookieService.get('Authorization')
-      }
-    });
-  }
-  
-  updateCategory(id: string, updateCategoryRequest: UpdateCategoryRequest) : Observable<Category> {
-    return this.http.put<Category>(`${environment.apiBaseUrl}/api/Categories/${id}`, updateCategoryRequest, {
-      headers: {
-        'Authorization': this.cookieService.get('Authorization')
-      }
+        Authorization: this.cookieService.get('Authorization'),
+      },
     });
   }
 
-  deleteCategory(id: string) : Observable<Category> {
+  updateCategory(id: string, updateCategoryRequest: UpdateCategoryRequest): Observable<Category> {
+    return this.http.put<Category>(
+      `${environment.apiBaseUrl}/api/Categories/${id}`,
+      updateCategoryRequest,
+      {
+        headers: {
+          Authorization: this.cookieService.get('Authorization'),
+        },
+      }
+    );
+  }
+
+  deleteCategory(id: string): Observable<Category> {
     return this.http.delete<Category>(`${environment.apiBaseUrl}/api/Categories/${id}`, {
       headers: {
-        'Authorization': this.cookieService.get('Authorization')
-      }
+        Authorization: this.cookieService.get('Authorization'),
+      },
     });
   }
 }
